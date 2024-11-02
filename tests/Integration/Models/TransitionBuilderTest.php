@@ -28,15 +28,15 @@ class TransitionBuilderTest extends TestCase
 
         $inputArc = InputArc::create($inputPlace, $inputArcExpression);
 
-        $ouputGuard = fn (int $x): bool => 10 == $x;
+        $ouputGuard = fn (string $x): bool => '10' === $x;
 
-        $outputTansform = fn (int $x): int => $x;
+        $outputTansform = fn (string $x): string => "Value: {$x}";
         $outputArcExpression = OutputArcExcpression::create($ouputGuard, $outputTansform);
         $outputPlace = Place::create('456', []);
 
         $outputArc = OutputArc::create($outputPlace, $outputArcExpression);
 
-        $transitionFunction = fn (int $x): int => $x;
+        $transitionFunction = fn (int $x): string => (string) $x;
 
         $transitionBuilder = TransitionBuilder::create($inputArc, $transitionFunction);
         $transitionBuilder = $transitionBuilder->addOutputArc($outputArc);
@@ -49,6 +49,6 @@ class TransitionBuilderTest extends TestCase
         $transition->fireUnsafe();
         // after
         $this->assertEquals([], $inputPlace->getTokens());
-        $this->assertEquals([10], $outputPlace->getTokens());
+        $this->assertEquals(['Value: 10'], $outputPlace->getTokens());
     }
 }
