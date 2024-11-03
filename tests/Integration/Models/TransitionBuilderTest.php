@@ -46,8 +46,12 @@ class TransitionBuilderTest extends TestCase
         // before
         $this->assertEquals([10], $inputPlace->getTokens());
         $this->assertEquals([], $outputPlace->getTokens());
-        $transition->fireUnsafe();
+        $reportBefore = $transition->reportInputs();
+        $this->assertEquals([true], $reportBefore);
+        $transition->fire();
         // after
+        $reportAfter = $transition->reportInputs();
+        $this->assertEquals([false], $reportAfter);
         $this->assertEquals([], $inputPlace->getTokens());
         $this->assertEquals(['Value: 10'], $outputPlace->getTokens());
     }

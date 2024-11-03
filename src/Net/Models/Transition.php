@@ -34,35 +34,30 @@ class Transition
         return new self($inputArcs, $transitionFunction, $outputArcs);
     }
 
-    public function fireUnsafe(): void
+    public function fire(): void
     {
-        // if all inputs are enabled
+        $collectedtInputs = [];
         foreach ($this->inputArcs as $inputArc) {
-            if (!$inputArc->isEnabled()) {
-                return;
-            }
+            $inputArc->pop()->match(
+                function ($token) use (&$collectedtInputs) {
+                    $collectedtInputs[] = $token;
+                },
+                fn () => null,// noop
+            );
         }
-        $collectedtInputs = array_map(fn (InputArcInterface $arc) => $arc->popUnsafe(), $this->inputArcs);
-
-        $result = call_user_func_array($this->transitionFunction, $collectedtInputs);
-        foreach ($this->outputArcs as $outputArc) {
-            $outputArc->pushUnsafe($result);
+        if (count($collectedtInputs) == count($this->inputArcs)) {
+            $result = call_user_func_array($this->transitionFunction, $collectedtInputs);
+            foreach ($this->outputArcs as $outputArc) {
+                $outputArc->pushUnsafe($result);
+            }
         }
     }
 
-    // public function fire(): void
-    // {
-    //     // if all inputs are enabled
-    //     foreach ($this->inputArcs as $inputArc) {
-    //         if (!$inputArc->isEnabled()) {
-    //             return;
-    //         }
-    //     }
-    //     $collectedtInputs = array_map(fn (InputArcInterface $arc) => $arc->pop(), $this->inputArcs);
-
-    //     $result = call_user_func_array($this->transitionFunction, $collectedtInputs);
-    //     foreach ($this->outputArcs as $outputArc) {
-    //         $outputArc->pushUnsafe($result);
-    //     }
-    // }
+    /**
+     * @return array<bool>
+     */
+    public function reportInputs(): array
+    {
+        return array_map(fn (InputArcInterface $arc) => $arc->isEnabled(), $this->inputArcs);
+    }
 }
