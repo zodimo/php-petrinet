@@ -53,6 +53,13 @@ class Transition
         }
     }
 
+    public function isEnabled(): bool
+    {
+        return array_reduce($this->reportInputs(), function (bool $acc, bool $input): bool {
+            return $acc && $input;
+        }, true);
+    }
+
     /**
      * @return array<bool>
      */
