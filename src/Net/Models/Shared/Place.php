@@ -2,29 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\PN\Net\Models;
+namespace Zodimo\PN\Net\Models\Shared;
 
 use Zodimo\BaseReturn\Option;
+use Zodimo\PN\Net\Models\ArcEnablementInterface;
+use Zodimo\PN\Net\Models\PlaceId;
 
 /**
- * @template TOKENCOLOUR
+ * @template TOKENCOLOURSET
  *
- * @template-implements InputPlaceInterface<TOKENCOLOUR>
- * @template-implements OutputPlaceInterface<TOKENCOLOUR>
+ * @template-implements InputPlaceInterface<TOKENCOLOURSET>
+ * @template-implements OutputPlaceInterface<TOKENCOLOURSET>
  */
 class Place implements InputPlaceInterface, OutputPlaceInterface
 {
     /**
-     * @param array<TOKENCOLOUR> $tokens
+     * @param array<TOKENCOLOURSET> $tokens
      */
     private function __construct(private string $id, private array $tokens) {}
 
     /**
-     * @template _TOKENCOLOUR
+     * @template _TOKENCOLOURSET
      *
-     * @param array<_TOKENCOLOUR> $intialTokens
+     * @param array<_TOKENCOLOURSET> $intialTokens
      *
-     * @return Place<_TOKENCOLOUR>
+     * @return Place<_TOKENCOLOURSET>
      */
     public static function create(string $id, array $intialTokens): Place
     {
@@ -43,9 +45,9 @@ class Place implements InputPlaceInterface, OutputPlaceInterface
     }
 
     /**
-     * @param ArcEnablementInterface<TOKENCOLOUR> $arcEnablement
+     * @param ArcEnablementInterface<TOKENCOLOURSET> $arcEnablement
      *
-     * @return Option<TOKENCOLOUR>
+     * @return Option<TOKENCOLOURSET>
      */
     public function pop(ArcEnablementInterface $arcEnablement): Option
     {
@@ -61,15 +63,18 @@ class Place implements InputPlaceInterface, OutputPlaceInterface
     }
 
     /**
-     * @param TOKENCOLOUR $token
+     * @param TOKENCOLOURSET $token
      */
     public function push($token): void
     {
+        /**
+         * runtime type check or is phpstan enough ?
+         */
         $this->tokens[] = $token;
     }
 
     /**
-     * @return PlaceId<TOKENCOLOUR>
+     * @return PlaceId<TOKENCOLOURSET>
      */
     public function getPlaceId(): PlaceId
     {
@@ -82,7 +87,7 @@ class Place implements InputPlaceInterface, OutputPlaceInterface
     }
 
     /**
-     * @return array<TOKENCOLOUR>
+     * @return array<TOKENCOLOURSET>
      */
     public function getTokens(): array
     {

@@ -6,6 +6,7 @@ namespace Zodimo\PN\Tests\Unit\Models;
 
 use PHPUnit\Framework\TestCase;
 use Zodimo\PN\Net\Models\InputArcInterface;
+use Zodimo\PN\Net\Models\Instance\InputArcInterface as InstanceInputArcInterface;
 use Zodimo\PN\Net\Models\OutputArcInterface;
 use Zodimo\PN\Net\Models\Transition;
 use Zodimo\PN\Net\Models\TransitionBuilder;
@@ -31,13 +32,22 @@ class TransitionBuilderTest extends TestCase
         $this->assertFalse($builder->validate());
     }
 
-    public function testValidWithEmptyOutputArcs(): void
+    public function testValidWithNonEmptyOutputArcs(): void
     {
-        $inputArc = $this->createMock(InputArcInterface::class);
+        $inputArc = $this->createMock(InstanceInputArcInterface::class);
         $builder = TransitionBuilder::create($inputArc, fn ($x) => $x);
         $outputArc = $this->createMock(OutputArcInterface::class);
         $builder = $builder->addOutputArc($outputArc);
         $this->assertTrue($builder->validate());
         $this->assertInstanceOf(Transition::class, $builder->buildUnsafe());
+    }
+
+    public function testInValidNonEmptyOutputArcsAndZeroInstanceInputs(): void
+    {
+        $inputArc = $this->createMock(InputArcInterface::class);
+        $builder = TransitionBuilder::create($inputArc, fn ($x) => $x);
+        $outputArc = $this->createMock(OutputArcInterface::class);
+        $builder = $builder->addOutputArc($outputArc);
+        $this->assertFalse($builder->validate());
     }
 }

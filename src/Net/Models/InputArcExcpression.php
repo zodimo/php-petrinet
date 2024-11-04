@@ -45,6 +45,9 @@ class InputArcExcpression implements InputArcExpressionInterface
         return call_user_func($this->transform, $token);
     }
 
+    /**
+     * @param TIN $token
+     */
     public function acceptsToken($token): bool
     {
         return call_user_func($this->guard, $token);

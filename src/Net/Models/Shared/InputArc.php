@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\PN\Net\Models;
+namespace Zodimo\PN\Net\Models\Shared;
 
 use Zodimo\BaseReturn\Option;
+use Zodimo\PN\Net\Models\InputArcExpressionInterface;
 
 /**
  * @template TIN
@@ -24,13 +25,13 @@ class InputArc implements InputArcInterface
     ) {}
 
     /**
-     * @template PLACE_TOKEN_COLOUR
+     * @template PLACE_TOKENCOLOURSET
      * @template EXPRESSION_OUTPUT
      *
-     * @param InputPlaceInterface<PLACE_TOKEN_COLOUR>                           $inputPlace
-     * @param InputArcExpressionInterface<PLACE_TOKEN_COLOUR,EXPRESSION_OUTPUT> $expression
+     * @param InputPlaceInterface<PLACE_TOKENCOLOURSET>                           $inputPlace
+     * @param InputArcExpressionInterface<PLACE_TOKENCOLOURSET,EXPRESSION_OUTPUT> $expression
      *
-     * @return InputArc<PLACE_TOKEN_COLOUR,EXPRESSION_OUTPUT>
+     * @return InputArc<PLACE_TOKENCOLOURSET,EXPRESSION_OUTPUT>
      */
     public static function create(InputPlaceInterface $inputPlace, InputArcExpressionInterface $expression): InputArc
     {

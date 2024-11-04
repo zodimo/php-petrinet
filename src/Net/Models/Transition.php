@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Zodimo\PN\Net\Models;
 
+use Zodimo\PN\Net\Models\Instance\InputArcInterface as InstanceInputArcInterface;
+use Zodimo\PN\Net\Models\Instance\OutputArcInterface as InstanceOutputArcInterface;
+use Zodimo\PN\Net\Models\Shared\InputArcInterface as SharedInputArcInterface;
+use Zodimo\PN\Net\Models\Shared\OutputArcInterface as SharedOutputArcInterface;
+
 /**
  * @template TVALUE
  */
@@ -11,7 +16,7 @@ class Transition
 {
     /**
      * @param array<InputArcInterface<mixed,mixed>>  $inputArcs
-     * @param callable(mixed):TVALUE                 $transitionFunction
+     * @param callable(mixed,?mixed):TVALUE          $transitionFunction
      * @param array<OutputArcInterface<mixed,mixed>> $outputArcs
      */
     private function __construct(
@@ -24,7 +29,7 @@ class Transition
      * @template TFOUT
      *
      * @param array<InputArcInterface<mixed,mixed>>  $inputArcs
-     * @param callable(mixed):TFOUT                  $transitionFunction
+     * @param callable(mixed,?mixed):TFOUT           $transitionFunction
      * @param array<OutputArcInterface<mixed,mixed>> $outputArcs
      *
      * @return Transition<TFOUT>
@@ -34,37 +39,94 @@ class Transition
         return new self($inputArcs, $transitionFunction, $outputArcs);
     }
 
-    public function fire(): void
+    /**
+     * Unsafe.
+     *
+     * @throws \RuntimeException
+     */
+    public function fireUnsafe(string $instanceId): void
     {
         $collectedtInputs = [];
         foreach ($this->inputArcs as $inputArc) {
-            $inputArc->pop()->match(
-                function ($token) use (&$collectedtInputs) {
-                    $collectedtInputs[] = $token;
-                },
-                fn () => null,// noop
-            );
+            switch (true) {
+                case $inputArc instanceof InstanceInputArcInterface:
+                    $inputArc->pop($instanceId)->match(
+                        function ($token) use (&$collectedtInputs) {
+                            $collectedtInputs[] = $token;
+                        },
+                        fn () => null,// noop
+                    );
+
+                    break;
+
+                case $inputArc instanceof SharedInputArcInterface:
+                    $inputArc->pop()->match(
+                        function ($token) use (&$collectedtInputs) {
+                            $collectedtInputs[] = $token;
+                        },
+                        fn () => null,// noop
+                    );
+
+                    break;
+
+                default:
+                    // this is not so good....
+                    throw new \RuntimeException('Unsupported InputArcType: '.get_class($inputArc));
+            }
         }
         if (count($collectedtInputs) == count($this->inputArcs)) {
             $result = call_user_func_array($this->transitionFunction, $collectedtInputs);
             foreach ($this->outputArcs as $outputArc) {
-                $outputArc->pushUnsafe($result);
+                switch (true) {
+                    case $outputArc instanceof InstanceOutputArcInterface:
+                        $outputArc->pushUnsafe($instanceId, $result);
+
+                        break;
+
+                    case $outputArc instanceof SharedOutputArcInterface:
+                        $outputArc->pushUnsafe($result);
+
+                        break;
+
+                    default:
+                        // this is not so good....
+                        throw new \RuntimeException('Unsupported InputArcType: '.get_class($outputArc));
+                }
             }
         }
     }
 
-    public function isEnabled(): bool
+    public function isEnabled(string $instanceId): bool
     {
-        return array_reduce($this->reportInputs(), function (bool $acc, bool $input): bool {
-            return $acc && $input;
-        }, true);
+        $reportedInputs = $this->reportInputs($instanceId);
+
+        return count($this->inputArcs) == count(array_filter($reportedInputs));
     }
 
     /**
      * @return array<bool>
      */
-    public function reportInputs(): array
+    public function reportInputs(string $instanceId): array
     {
-        return array_map(fn (InputArcInterface $arc) => $arc->isEnabled(), $this->inputArcs);
+        $arcEnablements = [];
+        foreach ($this->inputArcs as $inputArc) {
+            switch (true) {
+                case $inputArc instanceof InstanceInputArcInterface:
+                    $arcEnablements[] = $inputArc->isEnabled($instanceId);
+
+                    break;
+
+                case $inputArc instanceof SharedInputArcInterface:
+                    $arcEnablements[] = $inputArc->isEnabled();
+
+                    break;
+
+                default:
+                    // this is not so good....
+                    throw new \RuntimeException('Unsupported InputArcType: '.get_class($inputArc));
+            }
+        }
+
+        return $arcEnablements;
     }
 }

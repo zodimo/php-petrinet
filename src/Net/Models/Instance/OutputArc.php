@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\PN\Net\Models;
+namespace Zodimo\PN\Net\Models\Instance;
+
+use Zodimo\PN\Net\Models\OutputArcExpressionInterface;
 
 /**
  * @template TIN
@@ -39,10 +41,11 @@ class OutputArc implements OutputArcInterface
      *
      * @throws \RuntimeException
      */
-    public function pushUnsafe($token): void
+    public function pushUnsafe(string $instanceId, $token): void
     {
         if ($this->expression->acceptsToken($token)) {
-            $this->outputPlace->push($this->expression->getToken($token));
+            $basicToken = BasicToken::create($instanceId, $this->expression->getToken($token));
+            $this->outputPlace->push($basicToken);
         } else {
             throw new \RuntimeException('Token not accepted here...');
         }

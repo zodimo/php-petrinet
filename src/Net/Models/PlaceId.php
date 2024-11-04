@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Zodimo\PN\Net\Models;
 
 /**
- * @template TOKENCOLOUR
+ * @template TOKENCOLOURSET
  */
 class PlaceId
 {
     /**
-     * @param ?TOKENCOLOUR $phantomTokenType
+     * @param ?TOKENCOLOURSET $phantomTokenType
      */
     private function __construct(
         private string $id,
@@ -19,9 +19,9 @@ class PlaceId
     ) {}
 
     /**
-     * @param ?TOKENCOLOUR $phantomTokenType
+     * @param ?TOKENCOLOURSET $phantomTokenType
      *
-     * @return PlaceId<TOKENCOLOUR>
+     * @return PlaceId<TOKENCOLOURSET>
      */
     public static function create(string $id, $phantomTokenType = null)
     {

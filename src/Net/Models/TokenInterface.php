@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Zodimo\PN\Net\Models;
 
 /**
- * @template TIN
- * @template TOUT
+ * @template TOKENCOLOURSET
  */
-interface InputArcInterface {}
+interface TokenInterface {}

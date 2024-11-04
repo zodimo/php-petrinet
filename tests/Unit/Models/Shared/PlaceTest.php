@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Zodimo\PN\Tests\Unit\Models;
+namespace Zodimo\PN\Tests\Unit\Models\Shared;
 
 use PHPUnit\Framework\TestCase;
-use Zodimo\PN\Net\Models\Place;
+use Zodimo\PN\Net\Models\Shared\Place;
 
 /**
  * @internal
