@@ -12,7 +12,7 @@ use Zodimo\PN\Net\Models\Shared\OutputArcInterface as SharedOutputArcInterface;
 /**
  * @template TVALUE
  */
-class Transition
+class ConnectedTransition
 {
     /**
      * @param array<InputArcInterface<mixed,mixed>>  $inputArcs
@@ -32,9 +32,9 @@ class Transition
      * @param callable(mixed,?mixed):TFOUT           $transitionFunction
      * @param array<OutputArcInterface<mixed,mixed>> $outputArcs
      *
-     * @return Transition<TFOUT>
+     * @return ConnectedTransition<TFOUT>
      */
-    public static function create(array $inputArcs, callable $transitionFunction, array $outputArcs): Transition
+    public static function create(array $inputArcs, callable $transitionFunction, array $outputArcs): ConnectedTransition
     {
         return new self($inputArcs, $transitionFunction, $outputArcs);
     }

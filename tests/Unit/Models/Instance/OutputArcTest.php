@@ -53,6 +53,6 @@ class OutputArcTest extends TestCase
 
         $this->assertTrue($outputArc->isEnabledBy($token));
         $outputArc->pushUnsafe($instanceId, 10);
-        $this->assertEquals([$basicToken], $place->getTokens($instanceId));
+        $this->assertEquals([$basicToken], $place->getTokens());
     }
 }

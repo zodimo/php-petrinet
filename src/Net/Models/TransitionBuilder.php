@@ -86,21 +86,21 @@ class TransitionBuilder
     }
 
     /**
-     * @return Transition<TVALUE>
+     * @return ConnectedTransition<TVALUE>
      *
      * @throws \RuntimeException
      */
-    public function buildUnsafe(): Transition
+    public function buildUnsafe(): ConnectedTransition
     {
         if (!$this->validate()) {
             throw new \RuntimeException('Builder is not valid');
         }
 
-        return Transition::create($this->inputArcs, $this->transitionFunction, $this->outputArcs);
+        return ConnectedTransition::create($this->inputArcs, $this->transitionFunction, $this->outputArcs);
     }
 
     /**
-     * @return Option<Transition<TVALUE>>
+     * @return Option<ConnectedTransition<TVALUE>>
      */
     public function build(): Option
     {
@@ -108,6 +108,6 @@ class TransitionBuilder
             return Option::none();
         }
 
-        return Option::some(Transition::create($this->inputArcs, $this->transitionFunction, $this->outputArcs));
+        return Option::some(ConnectedTransition::create($this->inputArcs, $this->transitionFunction, $this->outputArcs));
     }
 }
