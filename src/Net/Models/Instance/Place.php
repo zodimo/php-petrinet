@@ -35,7 +35,7 @@ class Place implements InputPlaceInterface, OutputPlaceInterface
 
     public function canEnable(string $instanceId, ArcEnablementInterface $arcEnablement): bool
     {
-        foreach ($this->getTokens($instanceId) as $token) {
+        foreach ($this->getInstanceTokens($instanceId) as $token) {
             if ($arcEnablement->acceptsToken($token->unwrap())) {
                 return true;
             }
@@ -51,9 +51,12 @@ class Place implements InputPlaceInterface, OutputPlaceInterface
      */
     public function pop(string $instanceId, ArcEnablementInterface $arcEnablement): Option
     {
-        foreach ($this->getTokens($instanceId) as $index => $token) {
+        foreach ($this->getInstanceTokens($instanceId) as $index => $token) {
             if ($arcEnablement->acceptsToken($token->unwrap())) {
+                // remove token
                 unset($this->tokens[$index]);
+                // reset token index
+                $this->tokens = [...$this->tokens];
 
                 return Option::some($token->unwrap());
             }
@@ -89,8 +92,16 @@ class Place implements InputPlaceInterface, OutputPlaceInterface
     /**
      * @return array<InstanceTokenInterface<TOKENCOLOURSET>>
      */
-    public function getTokens(string $instanceId): array
+    public function getInstanceTokens(string $instanceId): array
     {
         return array_filter($this->tokens, fn (InstanceTokenInterface $token) => $token->getInstanceId() == $instanceId);
+    }
+
+    /**
+     * @return array<InstanceTokenInterface<TOKENCOLOURSET>>
+     */
+    public function getTokens(): array
+    {
+        return $this->tokens;
     }
 }

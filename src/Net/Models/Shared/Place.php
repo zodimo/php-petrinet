@@ -53,7 +53,10 @@ class Place implements InputPlaceInterface, OutputPlaceInterface
     {
         foreach ($this->tokens as $index => $token) {
             if ($arcEnablement->acceptsToken($token)) {
+                // remove token
                 unset($this->tokens[$index]);
+                // reset token index
+                $this->tokens = [...$this->tokens];
 
                 return Option::some($token);
             }
