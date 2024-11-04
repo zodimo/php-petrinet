@@ -56,8 +56,8 @@ class TransitionBuilderTest extends TestCase
         $transition = $transitionBuilder->buildUnsafe();
 
         // before
-        $this->assertEquals([$basicToken], $inputPlace->getTokens($instanceId));
-        $this->assertEquals([], $outputPlace->getTokens($instanceId));
+        $this->assertEquals([$basicToken], $inputPlace->getInstanceTokens($instanceId));
+        $this->assertEquals([], $outputPlace->getInstanceTokens($instanceId));
         $reportBefore = $transition->reportInputs($instanceId);
         $this->assertEquals([true], $reportBefore);
         $this->assertTrue($transition->isEnabled($instanceId));
@@ -66,7 +66,80 @@ class TransitionBuilderTest extends TestCase
         $reportAfter = $transition->reportInputs($instanceId);
         $this->assertEquals([false], $reportAfter);
         $this->assertFalse($transition->isEnabled($instanceId));
-        $this->assertEquals([], $inputPlace->getTokens($instanceId));
-        $this->assertEquals([$expectedOutputBasicToken], $outputPlace->getTokens($instanceId));
+        $this->assertEquals([], $inputPlace->getInstanceTokens($instanceId));
+        $this->assertEquals([$expectedOutputBasicToken], $outputPlace->getInstanceTokens($instanceId));
+    }
+
+    public function testInstanceTokenOverMultipleInputplacesAreSyncronized(): void
+    {
+        $instanceId1 = 'instanceId1';
+        $instanceId2 = 'instanceId2';
+        $instanceId3 = 'instanceId3';
+
+        $place1Id = 'place1Id';
+        $place2Id = 'place2Id';
+        $place3Id = 'place3Id';
+
+        $succeedFN = fn ($_) => true;
+        $idFN = fn ($x) => $x;
+
+        // setup place 1
+
+        $place1InitialMarkings = [
+            BasicToken::create($instanceId3, 5),
+            BasicToken::create($instanceId1, 10),
+            BasicToken::create($instanceId2, 20),
+        ];
+        $place1 = Place::create($place1Id, $place1InitialMarkings);
+        $inputArc1 = InputArc::create($place1, InputArcExcpression::create($succeedFN, $idFN));
+
+        // setup place 2
+
+        $place2InitialMarkings = [
+            BasicToken::create($instanceId1, 15),
+        ];
+        $place2 = Place::create($place2Id, $place2InitialMarkings);
+        $inputArc2 = InputArc::create($place2, InputArcExcpression::create($succeedFN, $idFN));
+
+        /**
+         * @var array<InstanceTokenInterface<int>> $place3InitialMarkings
+         */
+        $place3InitialMarkings = [];
+        $place3 = Place::create($place3Id, $place3InitialMarkings);
+        $outputArc = OutputArc::create($place3, OutputArcExcpression::create($succeedFN, $idFN));
+
+        $transitionBuilder = TransitionBuilder::create2($inputArc1, $inputArc2, fn ($x, $y) => $x + $y);
+        $transitionBuilder = $transitionBuilder->addOutputArc($outputArc);
+
+        // Expectation setup
+        $afterFirePlace1Markings = [
+            BasicToken::create($instanceId3, 5),
+            BasicToken::create($instanceId2, 20),
+        ];
+        $afterFirePlace2Markings = [];
+        $afterFirePlace3Markings = [
+            BasicToken::create($instanceId1, 25),
+        ];
+
+        $this->assertTrue($transitionBuilder->validate());
+        $transition = $transitionBuilder->buildUnsafe();
+        // before fire
+        $this->assertTrue($transition->isEnabled($instanceId1));
+        $this->assertFalse($transition->isEnabled($instanceId2));
+        $this->assertFalse($transition->isEnabled($instanceId3));
+
+        $this->assertEquals($place1InitialMarkings, $place1->getTokens());
+        $this->assertEquals($place2InitialMarkings, $place2->getTokens());
+        $this->assertEquals($place3InitialMarkings, $place3->getTokens());
+
+        $transition->fireUnsafe($instanceId1);
+        // after fire
+        $this->assertFalse($transition->isEnabled($instanceId1));
+        $this->assertFalse($transition->isEnabled($instanceId2));
+        $this->assertFalse($transition->isEnabled($instanceId3));
+
+        $this->assertEquals($afterFirePlace1Markings, $place1->getTokens());
+        $this->assertEquals($afterFirePlace2Markings, $place2->getTokens());
+        $this->assertEquals($afterFirePlace3Markings, $place3->getTokens());
     }
 }
